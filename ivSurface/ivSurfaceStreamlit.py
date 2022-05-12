@@ -24,10 +24,8 @@ def dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timest
                                  host = dbHostname,
                                  connect_timeout = 10)
         
-        query = """ SELECT DISTINCT ON (symbol) symbol, "markIV"
-                    from trade_options where symbol::text like 'ETH%%' and exchange::text like 'deribit'
-                    and timestamp >= '%s' and timestamp < '%s' order by symbol, timestamp desc""" %  (timestampLower, timestampUpper)
-
+        query = queryList(0, None)
+        #query = queryList(1, (timestampLower, timestampUpper))
 
         cur = conn.cursor()
         cur.execute(query)
@@ -79,10 +77,45 @@ def ivSurface(options):
     xx,yy,zz = interpolateOptions(x,y,z)
 
     fig = go.Figure(data=[go.Surface(z=zz, x=xx, y=yy)])
-    fig.update_layout(title='Implied Volatility Surface for Deribit ETH Options', autosize=False, width=800, height=800)
+    fig.update_layout(title='Realtime Implied Volatility Surface for Deribit ETH Options', autosize=False, width=800, height=800)
     fig.update_layout(scene = dict(
                         xaxis_title='Strike Price',
                         yaxis_title='Days to Expiration',
                         zaxis_title='Implied Volatility'))
     return fig
+
+def queryList(index, parameters):
+
+    if index == 0:
+        query = '''
+            SELECT
+            trade_options.symbol, trade_options."markIV"
+            FROM
+            (
+                SELECT 
+                symbol, MAX(timestamp) AS timestamp
+                FROM 
+                trade_options
+                WHERE 
+                now() < "expirationDate" 
+                AND 
+                asset = 'ETH'
+                GROUP BY 
+                symbol
+            ) as latest_symbols
+            INNER JOIN
+            trade_options
+            ON
+            trade_options.timestamp = latest_symbols.timestamp AND trade_options.symbol = latest_symbols.symbol
+            ORDER BY latest_symbols.timestamp ASC
+            ;
+        '''
+    elif index == 1:
+        query = """ SELECT DISTINCT ON (symbol) symbol, "markIV"
+                    from trade_options where symbol::text like 'ETH%%' and exchange::text like 'deribit'
+                    and timestamp >= '%s' and timestamp < '%s' order by symbol, timestamp desc""" % parameters
+
+    return query
+
+
 
