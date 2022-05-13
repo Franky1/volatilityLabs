@@ -4,6 +4,9 @@ import plotly.express as px
 import psycopg2
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+
+plt.style.use('ggplot')
 
 def garchFigures(secretDict, timestampLower, timestampUpper):
 
@@ -11,7 +14,9 @@ def garchFigures(secretDict, timestampLower, timestampUpper):
     dbPassword = secretDict['dbPassword']
     dbHostname = secretDict['dbHostname']
     database = secretDict['database']
-    df = dfNormalize(dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timestampUpper))
+
+    query = queryGet(0, (timestampLower, timestampUpper))
+    df = dfNormalize(dbQuery(dbUsername, dbPassword, dbHostname, database, query))
     prices = df['price'].values
     datetimes = df['datetime'].values
 
@@ -21,8 +26,12 @@ def garchFigures(secretDict, timestampLower, timestampUpper):
     am.volatility = GARCH(1, 0, 1)
     am.distribution = Normal()
     res=am.fit()
-    fig = res.plot(annualize="D")
-    #fig = px.line(x=datetimes, y = prices)
+
+    fig = px.line(x=datetimes[:-1], y = res.conditional_volatility)
+    fig.update_layout(title='GARCH(1,1) Model', 
+                      xaxis_title="Datetime", 
+                      yaxis_title="Volatility")
+    
     return fig, None
 
 def dfNormalize(df):
@@ -35,7 +44,7 @@ def dfNormalize(df):
     
     return df1
 
-def dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timestampUpper):
+def dbQuery(dbUsername, dbPassword, dbHostname, database, query):
 
     try:
         conn = psycopg2.connect (dbname = database,
@@ -43,11 +52,6 @@ def dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timest
                                  password = dbPassword,
                                  host = dbHostname,
                                  connect_timeout = 10)
-        
-        query = """SELECT timestamp, price from trade_pairs where symbol::text like 'ETH%%' 
-                   and exchange::text like 'coinbase'
-                   and timestamp >= '%s' and timestamp < '%s' order by timestamp asc""" % (timestampLower, timestampUpper) 
-
 
         cur = conn.cursor()
         cur.execute(query)
@@ -63,3 +67,12 @@ def dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timest
     except:
         print("Some problem")
         return("Some problem")
+
+
+def queryGet(index, parameters):
+    if index == 0:
+        query = """SELECT timestamp, price from trade_pairs where symbol::text like 'ETH%%' 
+                   and exchange::text like 'coinbase'
+                   and timestamp >= '%s' and timestamp < '%s' order by timestamp asc""" % parameters
+    
+    return query

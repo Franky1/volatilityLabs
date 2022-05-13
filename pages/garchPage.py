@@ -13,7 +13,10 @@ SECONDSBACKTORETRIEVE = 3600
 
 def render(secretDict):
     garchBlurb = '''
-    This is where the GARCH blurb goes eventually.
+    The GARCH family of statistical models incorporate the empirical fact that volatility
+    is variable over time and exhibits clustering, i.e. periods of high volatility tend to follow
+    periods of high volatilty and similarly with low volatility.  Below we show a graph of the
+    volatility of ETH spot prices on Coinbase using a GARCH(1,1) model.
     '''
     st.write(garchBlurb)
 
@@ -23,5 +26,5 @@ def render(secretDict):
     fig0, temp = garch.garchFigures(secretDict, timestampLower, timestampUpper)
     st.plotly_chart(fig0, use_container_width=True)
 
-    if temp != None:
+    if temp is not None:
         st.write(temp)
