@@ -10,10 +10,11 @@ def skewFigures(secretDict, timestampLower, timestampUpper):
     dbPassword = secretDict['dbPassword']
     dbHostname = secretDict['dbHostname']
     database = secretDict['database']
-    df = dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timestampUpper)
-    #df = dfNormalize(df)
+
+    query = queryGet(0, (timestampLower, timestampUpper))
+    #df = dfNormalize(dbQuery(dbUsername, dbPassword, dbHostname, database, query))
     fig = px.line(x=range(10), y = range(10))
-    return fig, df
+    return fig, None
 
 def dfNormalize(df):
     
@@ -25,7 +26,7 @@ def dfNormalize(df):
     
     return df1
 
-def dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timestampUpper):
+def dbQuery(dbUsername, dbPassword, dbHostname, database, query):
 
     try:
         conn = psycopg2.connect (dbname = database,
@@ -33,11 +34,6 @@ def dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timest
                                  password = dbPassword,
                                  host = dbHostname,
                                  connect_timeout = 10)
-        
-        query = """ SELECT timestamp, "optionType", symbol, "markIV", delta
-                   from trade_options where symbol::text like 'ETH%%' and exchange::text like 'deribit'
-                   and timestamp >= '%s' and timestamp < '%s' order by timestamp asc""" %  (timestampLower, timestampUpper)
-
 
         cur = conn.cursor()
         cur.execute(query)
@@ -53,3 +49,11 @@ def dbQuery(dbUsername, dbPassword, dbHostname, database, timestampLower, timest
     except:
         print("Some problem")
         return("Some problem")
+
+def queryGet(index, parameters):
+    if index == 0:
+        query = """ SELECT timestamp, "optionType", symbol, "markIV", delta
+                   from trade_options where symbol::text like 'ETH%%' and exchange::text like 'deribit'
+                   and timestamp >= '%s' and timestamp < '%s' order by timestamp asc""" % parameters
+    
+    return query

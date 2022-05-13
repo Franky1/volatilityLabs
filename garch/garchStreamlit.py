@@ -30,7 +30,7 @@ def garchFigures(secretDict, timestampLower, timestampUpper):
     res=am.fit()
 
     fig = px.line(x=datetimes[:-1], y = 100 * (secondsPerYear ** .5) * res.conditional_volatility)
-    fig.update_layout(title='GARCH(1,1) Model', 
+    fig.update_layout(title='Volatility Estimated with GARCH(1,1) Model', 
                       xaxis_title="Datetime", 
                       yaxis_title="Annualized Volatility")
     
