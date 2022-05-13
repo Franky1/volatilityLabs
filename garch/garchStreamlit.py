@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 
 plt.style.use('ggplot')
 
+secondsPerYear = 60 * 60 * 24 * 365
+
 def garchFigures(secretDict, timestampLower, timestampUpper):
 
     dbUsername = secretDict['dbUsername']
@@ -27,10 +29,10 @@ def garchFigures(secretDict, timestampLower, timestampUpper):
     am.distribution = Normal()
     res=am.fit()
 
-    fig = px.line(x=datetimes[:-1], y = res.conditional_volatility)
+    fig = px.line(x=datetimes[:-1], y = 100 * (secondsPerYear ** .5) * res.conditional_volatility)
     fig.update_layout(title='GARCH(1,1) Model', 
                       xaxis_title="Datetime", 
-                      yaxis_title="Volatility")
+                      yaxis_title="Annualized Volatility")
     
     return fig, None
 

@@ -16,7 +16,8 @@ def render(secretDict):
     The GARCH family of statistical models incorporate the empirical fact that volatility
     is variable over time and exhibits clustering, i.e. periods of high volatility tend to follow
     periods of high volatilty and similarly with low volatility.  Below we show a graph of the
-    volatility of ETH spot prices on Coinbase using a GARCH(1,1) model.
+    volatility of ETH spot prices on Coinbase using a GARCH(1,1) model and data from the previous hour
+    of trading.
     '''
     st.write(garchBlurb)
 
