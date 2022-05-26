@@ -8,6 +8,10 @@ import matplotlib.pyplot as plt
 
 plt.style.use('ggplot')
 
+from julia import ARCHModels
+from julia import Main
+from julia import Base
+
 secondsPerYear = 60 * 60 * 24 * 365
 
 def garchFigures(secretDict, timestampLower, timestampUpper):
@@ -28,12 +32,20 @@ def garchFigures(secretDict, timestampLower, timestampUpper):
     am.volatility = GARCH(1, 0, 1)
     am.distribution = Normal()
     res=am.fit()
+    y = 100 * (secondsPerYear ** .5) * res.conditional_volatility
 
-    fig = px.line(x=datetimes[:-1], y = 100 * (secondsPerYear ** .5) * res.conditional_volatility)
+    fig = px.line(x=datetimes[:-1], y=y)
     fig.update_layout(title='Volatility Estimated with GARCH(1,1) Model', 
                       xaxis_title="Datetime", 
                       yaxis_title="Annualized Volatility")
+
     
+    ''''
+    model = Main.eval("ARCHModels.GARCH{1, 1}")
+    data = Main.eval("ARCHModels.BG96")
+    output = ARCHModels.fit(model, data)
+    '''
+
     return fig, None
 
 def dfNormalize(df):

@@ -1,8 +1,10 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+
+
 from pages import formalSpecPage, vecmPage, nftPage
-from pages import skewPage, ivSurfacePage, monteCarloPage
-from pages import garchPage
+from pages import ivSurfacePage, monteCarloPage
+from pages import garchPage, skewPage
 
 plt.style.use('ggplot')
 
@@ -48,5 +50,4 @@ if pwdText == pwd:
 
     elif topicSelection == topic[6]:
         garchPage.render(st.secrets)
-
 
